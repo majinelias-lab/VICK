@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Victoria — A Private Edition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Montserrat:wght@200;300;400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black: #070707;
+  --ivory: #f2ede6;
+  --ash: #a8a29e;
+  --plum: #2a1020;
+  --rose: #c4909a;
+  --champagne: #d4b896;
+  --chrome: #c8c8c8;
+  --nude: #e8d5c4;
+}
+
+html { scroll-behavior: auto; }
+
+body {
+  background: var(--black);
+  color: var(--ivory);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* CUSTOM CURSOR */
+.cursor {
+  position: fixed;
+  width: 8px; height: 8px;
+  background: var(--ivory);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  transform: translate(-50%, -50%);
+}
+.cursor-ring {
+  position: fixed;
+  width: 36px; height: 36px;
+  border: 1px solid rgba(242,237,230,0.4);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s, height 0.3s, border-color 0.3s;
+  transform: translate(-50%, -50%);
+}
+
+/* GRAIN OVERLAY */
+.grain {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 998;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px;
+}
+
+/* LOADER */
+.loader {
+  position: fixed; inset: 0;
+  background: var(--black);
+  z-index: 9000;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 2rem;
+}
+.loader-v {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(5rem, 20vw, 12rem);
+  font-weight: 300;
+  color: var(--ivory);
+  opacity: 0;
+  letter-spacing: 0.05em;
+}
+.loader-line {
+  width: 0; height: 1px;
+  background: var(--champagne);
+}
+.loader-text {
+  font-size: 0.62rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--ash);
+  opacity: 0;
+}
+
+/* ── HERO ── */
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  overflow: hidden;
+  padding: 4rem 2rem;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 60%, #2a1020 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 80% 20%, #1a0a14 0%, transparent 60%),
+    var(--black);
+}
+.hero-ambient {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 100% 50% at 50% 100%, rgba(196,144,154,0.08) 0%, transparent 70%);
+  animation: ambientPulse 6s ease-in-out infinite alternate;
+}
+@keyframes ambientPulse {
+  from { opacity: 0.6; }
+  to { opacity: 1; }
+}
+.hero-eyebrow {
+  font-size: 0.62rem;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: var(--ash);
+  margin-bottom: 2rem;
+  opacity: 0;
+}
+.hero-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(5rem, 22vw, 16rem);
+  font-weight: 300;
+  line-height: 0.85;
+  letter-spacing: -0.02em;
+  text-align: center;
+  background: linear-gradient(160deg, var(--ivory) 30%, var(--champagne) 60%, var(--rose) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  opacity: 0;
+}
+.hero-tagline {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: clamp(0.9rem, 3vw, 1.3rem);
+  color: var(--ash);
+  margin-top: 2rem;
+  letter-spacing: 0.15em;
+  opacity: 0;
+}
+.hero-scroll {
+  position: absolute;
+  bottom: 2.5rem; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column;
+  align-items: center; gap: 0.6rem;
+  opacity: 0;
+}
+.hero-scroll span {
+  font-size: 0.55rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--ash);
+}
+.scroll-line {
+  width: 1px; height: 40px;
+  background: linear-gradient(to bottom, var(--champagne), transparent);
+  animation: scrollPulse 2s ease-in-out infinite;
+}
+@keyframes scrollPulse {
+  0%, 100% { opacity: 0.3; transform: scaleY(0.8); }
+  50% { opacity: 1; transform: scaleY(1); }
+}
+
+/* ── EDITORIAL COVER ── */
+.editorial {
+  position: relative;
+  padding: clamp(4rem, 10vw, 8rem) clamp(1.5rem, 6vw, 5rem);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: center;
+  min-height: 100svh;
+  background: var(--black);
+}
+.editorial::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, #150a10 0%, var(--black) 50%, #0d0810 100%);
+}
+
+.editorial-label {
+  position: relative;
+  font-size: 0.58rem;
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: var(--rose);
+  margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: 1rem;
+}
+.editorial-label::before {
+  content: '';
+  display: block; width: 30px; height: 1px;
+  background: var(--rose);
+}
+
+/* PORTRAIT — the face fix */
+.portrait-wrap {
+  position: relative;
+  z-index: 2;
+}
+.portrait-frame {
+  position: relative;
+  /* Portrait aspect ratio — tall enough to show the full face */
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border: 1px solid rgba(196,144,154,0.2);
+}
+.portrait-frame::after {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(to top, rgba(7,7,7,0.5) 0%, transparent 40%),
+    linear-gradient(to bottom, rgba(7,7,7,0.2) 0%, transparent 30%);
+  pointer-events: none;
+}
+.portrait-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Show the face — bias toward the upper-center of the image */
+  object-position: center 20%;
+  display: block;
+  filter: contrast(1.05) saturate(0.85);
+}
+.portrait-caption {
+  margin-top: 1rem;
+  display: flex; justify-content: space-between;
+  align-items: center;
+}
+.portrait-caption span {
+  font-size: 0.55rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ash);
+}
+
+.editorial-text {
+  position: relative; z-index: 2;
+}
+.editorial-issue {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--champagne);
+  margin-bottom: 1.5rem;
+}
+.editorial-headline {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(3rem, 6vw, 5.5rem);
+  font-weight: 300;
+  line-height: 1;
+  color: var(--ivory);
+  margin-bottom: 1.5rem;
+}
+.editorial-headline em {
+  font-style: italic;
+  color: var(--rose);
+}
+.editorial-body {
+  font-size: clamp(0.78rem, 1.3vw, 0.88rem);
+  line-height: 2;
+  color: var(--ash);
+  max-width: 36ch;
+  border-left: 1px solid rgba(196,144,154,0.3);
+  padding-left: 1.5rem;
+  font-style: italic;
+}
+
+/* ── SPREADS ── */
+.spreads {
+  background: var(--black);
+  padding: clamp(4rem, 10vw, 8rem) clamp(1.5rem, 6vw, 5rem);
+}
+.spread {
+  display: grid;
+  align-items: center;
+  gap: clamp(2rem, 4vw, 4rem);
+  margin-bottom: clamp(6rem, 12vw, 10rem);
+}
+.spread:nth-child(odd) { grid-template-columns: 5fr 4fr; }
+.spread:nth-child(even) { grid-template-columns: 4fr 5fr; }
+.spread:nth-child(even) .spread-text { order: -1; }
+
+.spread-number {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(4rem, 12vw, 9rem);
+  font-weight: 300;
+  color: rgba(242,237,230,0.04);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+.spread-kicker {
+  font-size: 0.6rem;
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: var(--rose);
+  margin-bottom: 1rem;
+}
+.spread-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-weight: 300;
+  line-height: 1.05;
+  color: var(--ivory);
+  margin-bottom: 1.5rem;
+}
+.spread-body {
+  font-size: 0.82rem;
+  line-height: 2;
+  color: var(--ash);
+  max-width: 38ch;
+}
+.spread-divider {
+  width: 40px; height: 1px;
+  background: var(--champagne);
+  margin: 2rem 0;
+}
+.spread-accent {
+  height: 200px;
+  border: 1px solid rgba(196,144,154,0.12);
+  background: linear-gradient(135deg, rgba(42,16,32,0.6), rgba(7,7,7,0.9));
+  display: flex; align-items: center; justify-content: center;
+}
+.spread-accent-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.2rem, 3vw, 2rem);
+  font-style: italic;
+  color: rgba(196,144,154,0.4);
+  text-align: center;
+  padding: 1rem;
+}
+
+/* ── GALLERY ── */
+.gallery {
+  padding: clamp(4rem, 10vw, 8rem) clamp(1.5rem, 6vw, 5rem);
+  background: #050505;
+}
+.gallery-header {
+  text-align: center;
+  margin-bottom: clamp(3rem, 6vw, 5rem);
+}
+.gallery-eyebrow {
+  font-size: 0.6rem;
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: var(--ash);
+  margin-bottom: 1rem;
+}
+.gallery-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.5rem, 7vw, 5rem);
+  font-weight: 300;
+  font-style: italic;
+  color: var(--ivory);
+}
+.polaroids {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(1rem, 2vw, 2rem);
+  max-width: 900px;
+  margin: 0 auto;
+}
+.polaroid {
+  background: var(--ivory);
+  padding: clamp(0.5rem, 1.5vw, 1rem) clamp(0.5rem, 1.5vw, 1rem) clamp(2rem, 4vw, 3rem);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+  transform: rotate(var(--tilt));
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+  cursor: pointer;
+}
+.polaroid:hover {
+  transform: rotate(0deg) scale(1.04) translateY(-4px);
+  box-shadow: 0 40px 80px rgba(0,0,0,0.8);
+  z-index: 5;
+  position: relative;
+}
+/* Portrait polaroid so face shows */
+.polaroid-img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: #1a1a1a;
+}
+.polaroid-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+  filter: grayscale(100%) contrast(1.1);
+  transition: filter 0.6s ease;
+}
+.polaroid:hover .polaroid-img img {
+  filter: grayscale(0%) contrast(1.05);
+}
+.polaroid-label {
+  text-align: center;
+  font-size: 0.65rem;
+  color: #555;
+  margin-top: 0.5rem;
+  letter-spacing: 0.1em;
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* ── LETTER ── */
+.letter {
+  min-height: 100svh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: clamp(4rem, 10vw, 8rem) clamp(2rem, 8vw, 8rem);
+  text-align: center;
+  position: relative;
+  background: var(--black);
+}
+.letter::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(42,16,32,0.6) 0%, transparent 70%);
+}
+.letter-inner { position: relative; z-index: 1; max-width: 600px; }
+.letter-date {
+  font-size: 0.6rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--ash);
+  margin-bottom: 3rem;
+}
+.letter-body {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.4rem, 4vw, 2.4rem);
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--ivory);
+  margin-bottom: 3rem;
+}
+.letter-body em {
+  font-style: italic;
+  color: var(--rose);
+}
+.letter-sig {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1rem, 3vw, 1.4rem);
+  font-style: italic;
+  color: var(--champagne);
+  margin-bottom: 3rem;
+}
+.letter-divider {
+  width: 60px; height: 1px;
+  background: linear-gradient(to right, transparent, var(--champagne), transparent);
+  margin: 0 auto 3rem;
+}
+.letter-hb {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--rose);
+}
+
+/* ── FINALE ── */
+.finale {
+  position: relative;
+  min-height: 100svh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  overflow: hidden;
+  padding: 4rem 2rem;
+}
+.finale-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 80% at 50% 50%, #2a1020 0%, var(--black) 70%);
+}
+.finale-particles {
+  position: absolute; inset: 0;
+  pointer-events: none;
+}
+.particle {
+  position: absolute;
+  width: 2px; height: 2px;
+  background: var(--champagne);
+  border-radius: 50%;
+  animation: particleFloat var(--dur) ease-in-out infinite alternate;
+  opacity: 0.4;
+}
+@keyframes particleFloat {
+  from { transform: translateY(0) translateX(0); opacity: 0.1; }
+  to   { transform: translateY(var(--dy)) translateX(var(--dx)); opacity: 0.6; }
+}
+.finale-eyebrow {
+  position: relative; z-index: 2;
+  font-size: 0.6rem;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: var(--ash);
+  margin-bottom: 2rem;
+}
+.finale-headline {
+  position: relative; z-index: 2;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.5rem, 10vw, 8rem);
+  font-weight: 300;
+  line-height: 1.0;
+  text-align: center;
+  background: linear-gradient(160deg, var(--ivory), var(--champagne), var(--rose));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  max-width: 18ch;
+}
+.finale-sub {
+  position: relative; z-index: 2;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: clamp(0.9rem, 2.5vw, 1.3rem);
+  color: var(--ash);
+  margin-top: 2.5rem;
+  letter-spacing: 0.2em;
+}
+
+/* ── FOOTER ── */
+footer {
+  text-align: center;
+  padding: 2.5rem;
+  background: var(--black);
+  border-top: 1px solid rgba(242,237,230,0.06);
+}
+footer span {
+  font-size: 0.58rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: rgba(242,237,230,0.2);
+}
+
+/* ── MOBILE ── */
+@media (max-width: 680px) {
+  .editorial {
+    grid-template-columns: 1fr;
+  }
+  .editorial-body { max-width: 100%; }
+  .editorial-headline { font-size: clamp(2.5rem, 10vw, 4rem); }
+
+  .spread:nth-child(odd),
+  .spread:nth-child(even) {
+    grid-template-columns: 1fr;
+  }
+  .spread:nth-child(even) .spread-text { order: 0; }
+  .spread-accent { display: none; }
+
+  .polaroids { grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+
+  body { cursor: auto; }
+  .cursor, .cursor-ring { display: none; }
+}
+
+/* REVEAL UTILITY */
+.reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.35s; }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="grain"></div>
+
+<!-- LOADER -->
+<div class="loader" id="loader">
+  <div class="loader-v" id="loaderV">V.</div>
+  <div class="loader-line" id="loaderLine"></div>
+  <div class="loader-text" id="loaderText">A Private Edition · May 2026</div>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-ambient"></div>
+  <p class="hero-eyebrow reveal" id="heroEyebrow">A Private Edition &nbsp;·&nbsp; May 2026</p>
+  <h1 class="hero-name reveal reveal-delay-1" id="heroName">Victoria</h1>
+  <p class="hero-tagline reveal reveal-delay-2" id="heroTagline">An icon in motion.</p>
+  <div class="hero-scroll reveal reveal-delay-3" id="heroScroll">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- EDITORIAL COVER -->
+<section class="editorial">
+  <div class="portrait-wrap reveal">
+    <div class="portrait-frame">
+      <img src="/victoria-photo.png" alt="Victoria" loading="lazy">
+    </div>
+    <div class="portrait-caption">
+      <span>Portrait</span>
+      <span>The Birthday Girl</span>
+    </div>
+  </div>
+  <div class="editorial-text">
+    <div class="editorial-label reveal">The Victoria Issue · Édition Spéciale</div>
+    <div class="editorial-issue reveal reveal-delay-1">Celebrating · Her Day</div>
+    <h2 class="editorial-headline reveal reveal-delay-2">
+      Victoria<br>
+      <em>The Woman.</em><br>
+      The Moment.
+    </h2>
+    <p class="editorial-body reveal reveal-delay-3">
+      A woman of rare distinction — her presence commands a room before she speaks a word. Today, the world pauses to honour her.
+    </p>
+  </div>
+</section>
+
+<!-- SPREADS -->
+<div class="spreads">
+  <div class="spread">
+    <div class="spread-text">
+      <div class="spread-number reveal">01</div>
+      <div class="spread-kicker reveal reveal-delay-1">The Energy</div>
+      <h3 class="spread-title reveal reveal-delay-2">She walks in<br>and the room<br>rearranges itself.</h3>
+      <div class="spread-divider reveal reveal-delay-3"></div>
+      <p class="spread-body reveal reveal-delay-3">
+        There are people who fill space — and then there are people who define it. Victoria belongs to the second category. Effortlessly, completely, always.
+      </p>
+    </div>
+    <div class="spread-accent reveal reveal-delay-2">
+      <p class="spread-accent-text">"She doesn't chase the light — the light finds her."</p>
+    </div>
+  </div>
+
+  <div class="spread">
+    <div class="spread-accent reveal">
+      <p class="spread-accent-text">"Every era has its icon.<br>This one has Victoria."</p>
+    </div>
+    <div class="spread-text">
+      <div class="spread-number reveal reveal-delay-1">02</div>
+      <div class="spread-kicker reveal reveal-delay-1">The Presence</div>
+      <h3 class="spread-title reveal reveal-delay-2">An atmosphere<br>she carries<br>with her.</h3>
+      <div class="spread-divider reveal reveal-delay-3"></div>
+      <p class="spread-body reveal reveal-delay-3">
+        Warmth. Strength. Grace. The rare combination that makes a person magnetic. She has always known who she is — and this year, she owns it completely.
+      </p>
+    </div>
+  </div>
+
+  <div class="spread">
+    <div class="spread-text">
+      <div class="spread-number reveal">03</div>
+      <div class="spread-kicker reveal reveal-delay-1">The Era</div>
+      <h3 class="spread-title reveal reveal-delay-2">Her greatest<br>chapter begins<br>today.</h3>
+      <div class="spread-divider reveal reveal-delay-3"></div>
+      <p class="spread-body reveal reveal-delay-3">
+        Some people have moments. Victoria has eras. And this one — this year, this day — is the opening of something extraordinary. Watch the world catch up.
+      </p>
+    </div>
+    <div class="spread-accent reveal reveal-delay-2">
+      <p class="spread-accent-text">"Not a chapter. An entire volume."</p>
+    </div>
+  </div>
+</div>
+
+<!-- GALLERY -->
+<section class="gallery">
+  <div class="gallery-header">
+    <p class="gallery-eyebrow reveal">The Archive</p>
+    <h2 class="gallery-title reveal reveal-delay-1">The Woman Herself</h2>
+  </div>
+  <div class="polaroids">
+    <div class="polaroid reveal" style="--tilt: -2deg;">
+      <div class="polaroid-img">
+        <img src="/victoria-photo.png" alt="Victoria" loading="lazy">
+      </div>
+      <p class="polaroid-label">She.</p>
+    </div>
+    <div class="polaroid reveal reveal-delay-1" style="--tilt: 1.5deg;">
+      <div class="polaroid-img">
+        <img src="/victoria-photo.png" alt="Victoria" loading="lazy" style="object-position: center 30%;">
+      </div>
+      <p class="polaroid-label">The Icon.</p>
+    </div>
+    <div class="polaroid reveal reveal-delay-2" style="--tilt: -1deg;">
+      <div class="polaroid-img">
+        <img src="/victoria-photo.png" alt="Victoria" loading="lazy" style="object-position: center 25%;">
+      </div>
+      <p class="polaroid-label">The Moment.</p>
+    </div>
+  </div>
+</section>
+
+<!-- LETTER -->
+<section class="letter">
+  <div class="letter-inner">
+    <p class="letter-date reveal">May 2026</p>
+    <p class="letter-body reveal reveal-delay-1">
+      You don't enter rooms quietly.<br>
+      <em>You shift the atmosphere.</em><br><br>
+      You don't just show up in people's lives — you elevate them. You are one of those rare souls who makes everything feel more beautiful, more possible, more worth it.
+    </p>
+    <div class="letter-divider reveal reveal-delay-2"></div>
+    <p class="letter-sig reveal reveal-delay-2">
+      Happy Birthday, Victoria.
+    </p>
+    <p class="letter-hb reveal reveal-delay-3">Made with love, for you alone.</p>
+  </div>
+</section>
+
+<!-- FINALE -->
+<section class="finale">
+  <div class="finale-bg"></div>
+  <div class="finale-particles" id="particles"></div>
+  <p class="finale-eyebrow reveal">A Declaration</p>
+  <h2 class="finale-headline reveal reveal-delay-1">This Year Belongs<br>to You.</h2>
+  <p class="finale-sub reveal reveal-delay-2">Victoria · Always.</p>
+</section>
+
+<footer>
+  <span>A Private Edition &nbsp;·&nbsp; Victoria &nbsp;·&nbsp; May 2026 &nbsp;·&nbsp; Made with love</span>
+</footer>
+
+<script>
+/* CUSTOM CURSOR */
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+(function animCursor() {
+  rx += (mx - rx) * 0.18;
+  ry += (my - ry) * 0.18;
+  if (cursor) { cursor.style.left = mx + 'px'; cursor.style.top = my + 'px'; }
+  if (ring)   { ring.style.left = rx + 'px'; ring.style.top = ry + 'px'; }
+  requestAnimationFrame(animCursor);
+})();
+document.querySelectorAll('a, button, .polaroid').forEach(el => {
+  el.addEventListener('mouseenter', () => { ring.style.width = '60px'; ring.style.height = '60px'; ring.style.borderColor = 'rgba(196,144,154,0.6)'; });
+  el.addEventListener('mouseleave', () => { ring.style.width = '36px'; ring.style.height = '36px'; ring.style.borderColor = 'rgba(242,237,230,0.4)'; });
+});
+
+/* PARTICLES */
+const pContainer = document.getElementById('particles');
+for (let i = 0; i < 40; i++) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.style.left = Math.random() * 100 + '%';
+  p.style.top = Math.random() * 100 + '%';
+  p.style.setProperty('--dur', (4 + Math.random() * 6) + 's');
+  p.style.setProperty('--dy', (Math.random() * -60 - 20) + 'px');
+  p.style.setProperty('--dx', ((Math.random() - 0.5) * 40) + 'px');
+  p.style.animationDelay = (Math.random() * 6) + 's';
+  pContainer.appendChild(p);
+}
+
+/* LOADER */
+const loaderV = document.getElementById('loaderV');
+const loaderLine = document.getElementById('loaderLine');
+const loaderText = document.getElementById('loaderText');
+const loaderEl = document.getElementById('loader');
+
+let start = null;
+function animLoader(ts) {
+  if (!start) start = ts;
+  const t = ts - start;
+
+  if (t < 600) {
+    loaderV.style.opacity = Math.min(t / 400, 1);
+  }
+  if (t > 400 && t < 1000) {
+    const pct = Math.min((t - 400) / 500, 1);
+    loaderLine.style.width = (pct * 120) + 'px';
+  }
+  if (t > 700) {
+    loaderText.style.opacity = Math.min((t - 700) / 300, 1);
+  }
+  if (t < 1800) {
+    requestAnimationFrame(animLoader);
+  } else {
+    loaderEl.style.transition = 'opacity 0.8s ease';
+    loaderEl.style.opacity = '0';
+    setTimeout(() => { loaderEl.style.display = 'none'; revealInit(); }, 800);
+  }
+}
+requestAnimationFrame(animLoader);
+
+/* SCROLL REVEAL */
+function revealInit() {
+  const els = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  els.forEach(el => obs.observe(el));
+}
+
+/* MOUSE PARALLAX ON HERO */
+const heroEl = document.getElementById('hero');
+document.addEventListener('mousemove', e => {
+  const ox = (e.clientX / window.innerWidth - 0.5) * 20;
+  const oy = (e.clientY / window.innerHeight - 0.5) * 10;
+  heroEl.querySelector('.hero-ambient').style.transform = `translate(${ox}px, ${oy}px)`;
+});
+</script>
+</body>
+</html>
